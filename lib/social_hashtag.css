@@ -1,0 +1,9 @@
+#social_hashtags ul {
+	list-style: none 
+}
+#social_hashtags ul li {
+	display: inline-block; 
+}
+#social_hashtags ul li img {
+	width: 200px;
+}
