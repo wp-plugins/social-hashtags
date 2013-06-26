@@ -1,6 +1,6 @@
-=== Social Hastags ===
+=== Social Hashtags ===
 Contributors: shanaver
-Tags: instram, youtube, hashtags, videos, photos, images, API
+Tags: instagram, youtube, hashtags, videos, photos, images, API, twitter, teleportd
 Requires at least: 3.0.1
 Tested up to: 3.5.1
 Stable tag: trunk
@@ -11,9 +11,9 @@ Grabs images & videos matching any hashtag from social APIs like instagram & you
 
 == Description ==  
 
-Stores thumbnails & details locally in a custom post_type so you have full control over the content.  Also, this allows you to categorize, make private/public, etc.
+Grabs images & videos matching any hashtag from social APIs like instagram & youtube.  Stores thumbnails & details locally for each one in a custom post type so you have full control over the content on your site.  This allows you to categorize, make private/public, etc and include them any wayt hat you like on your pages.
 
-Extendable to include twitter and others as well.
+Extendable to include twitter, telportd and others as well.
 
 == Installation ==
 
@@ -35,6 +35,9 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 
 = 1.0.0 =
 * Initial Wordpress.com version
+
+= 1.0.1 =
+* Spelling fixes, etc
 
 == Upgrade Notice ==
 
