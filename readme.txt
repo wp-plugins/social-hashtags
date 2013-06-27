@@ -15,6 +15,8 @@ Grabs images & videos matching any hashtag from social APIs like instagram & you
 
 Extendable to include twitter, telportd and others as well.
 
+We first developed this for the original Kony2012 site, it was a huge hit.  Sorry that it took so long to get it into the Wordpress plugins.
+
 == Installation ==
 
 1. Upload dntly folder to the `/wp-content/plugins/` directory
@@ -38,6 +40,12 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 
 = 1.0.1 =
 * Spelling fixes, etc
+
+= 2.0.0 =
+* Add basic default archive page template
+* Fix cron functionality
+* Add logging through WLS plugin
+* Lots of cleanup & restructuring
 
 == Upgrade Notice ==
 

@@ -1,9 +1,9 @@
 <?php
 /*
  * @author      Bryan Shanaver <bryan[at]fiftyandfifty[dot]org>
- * @version     1.5.0
  */
 
+if( !class_exists('SOCIAL_HASHTAG_CACHE') ) {
 class SOCIAL_HASHTAG_CACHE {
   
   var $api_options = array(
@@ -15,13 +15,6 @@ class SOCIAL_HASHTAG_CACHE {
       'api_endpoint' => 'v1/tags/%string%/media/recent?',
       'auth_type' => 'client_id'
     ),
-    // 'twitter' => array(
-    //   'api_scheme' => 'http',
-    //   'api_host' => 'api.twitter.com',
-    //   'api_port' => '',
-    //   'api_endpoint' => '1.1/search/tweets.json?q=%string%',
-    //   'auth_type' => ''
-    // ),
     'youtube' => array(
       'api_scheme' => 'https',
       'api_host' => 'gdata.youtube.com',
@@ -29,6 +22,17 @@ class SOCIAL_HASHTAG_CACHE {
       'api_endpoint' => 'feeds/api/videos?q=%string%',
       'auth_type' => ''
     ),
+    //
+    // need to rebuild this for the new OAuth v1.1 API calls...
+    // 'twitter' => array(
+    //   'api_scheme' => 'http',
+    //   'api_host' => 'api.twitter.com',
+    //   'api_port' => '',
+    //   'api_endpoint' => '1.1/search/tweets.json?q=%string%',
+    //   'auth_type' => ''
+    // ),
+    // 
+    // this may still work, but it's a little redundant, so hiding...
     // 'teleportd' => array(
     //   'api_scheme' => 'http',
     //   'api_host' => 'v1.api.teleportd.com',
@@ -50,6 +54,8 @@ class SOCIAL_HASHTAG_CACHE {
   
   var $teleportd, $instagram, $twitter, $youtube;
 
+  var $debug = false;
+
   var $global_options     = 'social_hashtag-global';
   var $social_api_options = 'social_hashtag-apis';
   
@@ -58,8 +64,7 @@ class SOCIAL_HASHTAG_CACHE {
     $this->instagram = new PLATFORM_INSTAGRAM();
     $this->twitter = new PLATFORM_TWITTER();
     $this->youtube = new PLATFORM_YOUTUBE();
-    add_action('admin_menu', array(&$this, 'admin_menu'));
-    $this->create_posttype_and_taxonomy();
+    $this->add_archive_template();
   }
   
   function choose_platform($name){
@@ -82,210 +87,16 @@ class SOCIAL_HASHTAG_CACHE {
     return $platform;    
   }
   
-  function admin_menu() {
-    $page = add_options_page('Social Hashtag Settings', 'Social Hashtags', 'manage_options', 'social_hashtag-cache-api', array(&$this, 'admin_options'));
+  function add_archive_template(){
+    add_filter('archive_template', array(&$this, 'social_hashtag_custom_archive_template'), 10, 2);
   }
-    
-  function admin_options() {
-    if (!current_user_can('manage_options'))  {
-      wp_die( __('You do not have sufficient permissions to access this page.') );
+
+  function social_hashtag_custom_archive_template($template) {
+    global $wp_query;
+    if (is_post_type_archive('social_hashtag')) {
+        $template = SOCIAL_HASHTAG_PATH . 'lib/archive-social_hashtag.php';
     }
-
-    // print "<pre>";
-    // print_r($_POST);
-    // print "</pre>";
-       
-    if (!empty($_REQUEST['_wpnonce']) && wp_verify_nonce($_REQUEST['_wpnonce'], "update-options") && !empty($_REQUEST['social_hashtag_global'])) {
-      $this->save_option( $this->social_api_options, $_REQUEST['social_hashtag_cache'] );
-      $this->save_option( $this->global_options, $_REQUEST['social_hashtag_global'] );
-    }
-    $social_api_options = $this->get_social_hashtag_options();
-
-    $global_options     = $this->get_social_hashtag_options(null, 'global');
-    $debug_on           = !empty($global_options['debug_on'])?$global_options['debug_on']:'No';
-    $always_private     = !empty($global_options['always_private'])?$global_options['always_private']:'No';
-    $max_items          = !empty($global_options['max_items'])?$global_options['max_items']:'50';
-    $blacklisted_users  = !empty($global_options['blacklisted_users'])?$global_options['blacklisted_users']:'';
-
-    // print "<pre>";
-    // print_r($social_api_options);
-    // print "</pre>";
-
-    // print "<pre>";
-    // print_r($global_options);
-    // print "</pre>";
-    
-    if( !empty($_REQUEST['delete_api']) ){
-      foreach( $social_api_options as $cache_num => $option_settings ){
-        if( $_REQUEST['delete_api'] != $cache_num ){
-          $rebuild_api_options[] = $option_settings;
-        }
-      }
-      $this->save_option( $this->social_api_options, $rebuild_api_options );
-      $social_api_options = $rebuild_api_options;
-    }
-    
-    if( !empty($_REQUEST['add_api']) ){
-      $social_api_options[] = array_merge( $this->social_api_settings, array('api_selected' => $_REQUEST['api_option'],'search_name' => $_REQUEST['api_option']) );      
-    }
-        
-?>
-
-
-    
-<div class="wrap">
-  <div id="icon-options-general" class="icon32"><br /></div>
-  <h2>Social Hashtags</h2>
-  <form action="options-general.php?page=social_hashtag-cache-api" method="post" id="social_hashtag_form">
-    <?php wp_nonce_field('update-options'); ?>
-    <input type="hidden" name="delete_api" id="delete_api" />
-      
-<?php if( isset($social_api_options[0]) ): ?>    
-    
-    <h3>Global Settings</h3>
-
-	  <table id="all-plugins-table" class="widefat">   
-      <thead>
-        <tr>
-          <th class="manage-column" scope="col">All APIs Inherit These Settings</th>
-          <th class="manage-column" scope="col"> </th>
-        </tr>
-      </thead>
-      <tbody class="plugins">
-        <tr class="active">
-          <td class="desc">
-        	  <select name="social_hashtag_global[debug_on]" class="disable_onchange" >
-        	    <option value="No" <?php selected( $debug_on, 'No' ); ?>>No</option>
-        	    <option value="Yes" <?php selected( $debug_on, 'Yes' ); ?>>Yes</option>
-        		</select> 
-          </td>
-      	  <th scope="row">
-        		<label for="">Turn debug ON</label><br/>
-        		<code>Debugging info will be sent to the javascript console when you run manual tests</code>
-        	</th>
-        </tr>      
-        <tr class="active">
-          <td class="desc">
-        	  <select name="social_hashtag_global[always_private]" class="disable_onchange" >
-        	    <option value="No" <?php selected( $always_private, 'No' ); ?>>No</option>
-        	    <option value="Yes" <?php selected( $always_private, 'Yes' ); ?>>Yes</option>
-        		</select> 
-          </td>
-      	  <th scope="row">
-        		<label for="">Set new items as private by default</label><br/>
-        		<code>You will need to review new items and set them to public</code>
-        	</th>
-        </tr>
-        <tr class="active">
-          <td class="desc">
-            <p><input type="text" name="social_hashtag_global[max_items]" value="<?php print ( is_numeric($max_items) ? $max_items : '0') ?>" class="regular-text disable_onchange" /></p>
-          </td>
-      	  <th scope="row">
-        		<label for="">Max number of items to get per API</label><br/>
-        		<code>Set to 0 for no max - this may take a long time to run since some services only let you grab 50 at a time.</code>
-        	</th>
-        </tr>  
-        <tr class="active">
-          <td class="desc">
-            <p><textarea name="social_hashtag_global[blacklisted_users]" cols="80" rows="4"><?php print $blacklisted_users ?></textarea></p>
-          </td>
-      	  <th scope="row">
-        		<label for="">Blacklisted usernames/handles</label><br/>
-        		<code>comma separated</code>
-        	</th>
-        </tr>
-      </tbody>
-		</table>   
-		
-<?php endif; ?>  
-		
-		<div style="width:100%;height:20px"></div> 
-		
-    <select name="api_option" style="width:100px">
-<?php foreach( $this->api_options as $option => $option_settings ): ?>
-      <option value="<?php print $option ?>"><?php print $option ?></option>
-<?php endforeach; ?>
-    </select> 
-
-    <input type="hidden" name="add_api" id="add_api" />
-    <a href="javascript:add_an_api();" class="button-secondary">Add an API Source</a>
-    
-    <div style="width:100%;height:20px"></div>
-    
-    <h3>API Settings</h3>
-    
-<?php 
-
-    if( !empty($social_api_options[0]) ){
-      foreach( $social_api_options as $api_num => $api_settings){
-        if( !empty($api_settings['api_selected']) ){
-          //$url = $this->build_api_search_url($cache_num);
-          //$api_urls .= "api_url[{$cache_num}] = '{$url}';\n\t";
-          $platform = $this->choose_platform($api_settings['api_selected']);
-          if(is_object($platform)){
-            $platform->admin_form($api_settings, $api_num, $this->api_options);
-          }
-        }
-      }
-    }
-
-?>
-
-    <style>
-      th{width:600px;}
-      .remove-div{text-align:right;margin-right:10px}
-    </style>
-    <script type="text/javascript">
-      jQuery("#social_hashtag_form").children(".widgets-holder-wrap").children(".sidebar-name").click(function() {
-          jQuery(this).parent().toggleClass("closed")
-      });    
-      function add_an_api(){
-        jQuery('#social_hashtag_form #add_api').val('true');
-        jQuery('#social_hashtag_form').submit()
-      }
-      function delete_an_api(num){
-        jQuery('#social_hashtag_form #delete_api').val(num);
-        jQuery('#social_hashtag_form').submit()
-      }
-      function test_api(num){
-        var api_url = Array();
-        jQuery.getJSON(api_url[num] + "&format=json&callback=?", function(data){
-          window.console && console.debug(api_url[num]);
-          window.console && console.debug(data);
-          var success = false;
-          try{if(data.meta.code == 200){success = true;}}catch(err){}
-          try{if(data.status == 'OK'){success = true;}}catch(err){}
-          try{if(data.results){success = true;}}catch(err){}
-          if(success){
-            alert('Success');
-          }else{
-            alert('Error');
-          }
-        });
-      }
-      function run_manually(num){
-        window.console && console.debug('run_manually');
-        if(jQuery('#social_hashtag_form .debug').attr('checked')){debug='true';}else{debug='';}
-        jQuery.get(('/wp-admin/?run_social_hashtag_manually=true&num=' + num + '&debug=' + debug), function(data) {
-          window.console && console.debug(data);
-          jQuery("#run_manually_response").html('');
-        }).complete(function() { alert('Success'); });
-      }
-      jQuery(function() {
-        jQuery('.disable_onchange').change(function() {
-          jQuery('#test_api').attr("href", "javascript:alert('save changes first')");
-          jQuery('#run_manually').attr("href", "javascript:alert('save changes first')");
-        });  
-      });
-    </script>
-
-    <p class="submit">
-      <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
-    </p>
-  </form>
-</div>
-<?php
-
+    return $template;
   }
   
   function get_available_postypes(){
@@ -321,27 +132,42 @@ class SOCIAL_HASHTAG_CACHE {
     try {
   
         foreach( $photos as $num => $photo ) {
+
+          if( $plugin_options['max_items'] && $retrieved >= $plugin_options['max_items'] ){ break; }
+          
+          if( !$platform->parse_response($photo, $platform_options) ){ 
+            if($plugin_options['debug_on']){
+              social_hashtag_logging($platform->pic_full_title . "\n[not added] parsing error ", 1);
+              continue; 
+            }
+          }
           
           $retrieved++;
 
-          if( !$platform->parse_response($photo, $platform_options) ){ continue; }
-          
-          if( $plugin_options['max_items'] && $retrieved > $plugin_options['max_items'] ){ break; }
-          
           // Check to see if this user is blacklisted, skip to the next on if so   
           if( count($blacklist) ){    
-            if(  array_search ( $platform->pic_handle, $blacklist ) ){ if($plugin_options['debug_on']){print $platform->pic_full_title . " [not added] blacklisted user: ".$platform->pic_handle." \n";} continue; }
+            if(  array_search ( $platform->pic_handle, $blacklist ) ){ 
+              if($plugin_options['debug_on']){
+                social_hashtag_logging($platform->pic_full_title . "\n[not added] blacklisted user: " . $platform->pic_handle, 1); }
+                continue; 
+              }
           }
 
           // Check to see if this is a retweet, skip to the next on if so  
-          if( $platform_options['skip_retweets'] == 'Yes' ){
-            if(  strstr ( $platform->pic_full_title , 'RT ') ){ if($plugin_options['debug_on']){print $platform->pic_full_title . " [not added] Retweet suspected : ".$platform->pic_full_title." \n";} continue; }
+          if( @$platform_options['skip_retweets'] == 'Yes' ){
+            if(  strstr ( $platform->pic_full_title , 'RT ') ){ if($plugin_options['debug_on']){
+              social_hashtag_logging($platform->pic_full_title . "\n[not added] Retweet suspected : ".$platform->pic_full_title, 1); }
+              continue; 
+            }
           }
 
           // Check to see if we already have this photo, skip to the next one if we do
           $existing_photo = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE meta_key = 'social_hashtag_sha' and meta_value = %s", $platform->pic_sha ) );          
-          if( count($existing_photo) >= 1 ){ if($plugin_options['debug_on']){print $platform->pic_full_title . " [not added] sha exists: ".$platform->pic_sha." \n";} continue; }
-          else{ if($plugin_options['debug_on']){print $platform->pic_full_title." \n";} }
+          if( count($existing_photo) >= 1 ){ if($plugin_options['debug_on']){
+            social_hashtag_logging($platform->pic_full_title . "\n[not added] we already have this one ", 1); } 
+            continue; 
+          }
+          else{ if($plugin_options['debug_on']){social_hashtag_logging($platform->pic_full_title, 1);} }
 
           $added++;
           
@@ -428,7 +254,7 @@ class SOCIAL_HASHTAG_CACHE {
           }
           
           // link post to the api_search_name category
-          if( $this->plugin_options[search_name] ){
+          if( $this->plugin_options['search_name'] ){
             $new_category = term_exists( $this->plugin_options[search_name], 'social_hashtag_categories');
             if( $new_category ){
               array_push( $category_ids, $new_category['term_id'] );
@@ -458,13 +284,13 @@ class SOCIAL_HASHTAG_CACHE {
       
         }
 
-        print $platform->pic_handle_platform . " complete! " . $retrieved . " records retrieved, " . $added . " records added\t|\t";
+        return $platform->pic_handle_platform . " complete! " . $retrieved . " records retrieved, " . $added . " records added ";
+
     } catch (Exception $e) {
-        print 'Error: ' . $e->getMessage();
+        return 'Error: ' . $e->getMessage();
     }
     
   }
-  
   
   function run_social_hashtag_query($num=0){
     
@@ -477,10 +303,12 @@ class SOCIAL_HASHTAG_CACHE {
     $search_url = $this->build_api_search_url($num);
     
     $count_items = 0;
+
+    $results = "";
     
     while( strlen($search_url) > 10 ){
       
-      if($global_options['debug_on']){print("\n\nurl: " . $search_url . " \n");}
+      if( !empty($global_options['debug_on']) ){social_hashtag_logging('API url: ' . $search_url, 1);}
       
       $json_string = $this->remote_get_contents($search_url);
       $response = json_decode($json_string);
@@ -491,13 +319,13 @@ class SOCIAL_HASHTAG_CACHE {
         break;
       }
       
-      if($global_options['debug_on']){print("count: " . count($photos) . " \n");}
+      if( !empty($global_options['debug_on']) ){social_hashtag_logging('total items returned from API: ' . count($photos), 1);}
 
-      $this->import_item($photos, $platform, $platform_options, $global_options);
+      $results .= $this->import_item($photos, $platform, $platform_options, $global_options);
       
       $count_items = count($photos) + $count_items;
       if($count_items > $global_options['max_items'] && $global_options['max_items']){
-        if($global_options['debug_on']){print("\n\nMax results settings hit: " . $global_options['max_items']);}
+        if( !empty($global_options['debug_on']) ){social_hashtag_logging('Max results settings hit: ' . $global_options['max_items'], 1);}
         break;
       }
       
@@ -506,18 +334,14 @@ class SOCIAL_HASHTAG_CACHE {
       
     }
 
+    return $results;
+
   }
   
   function build_api_search_url($option_num=0){
     
     $plugin_options = $this->get_social_hashtag_options();
-
-    print_r($option_num);
-
     $api_settings = $this->get_social_hashtag_options($option_num);
-
-    print_r($api_settings);
-
     $api_options = $this->api_options[$api_settings['api_selected']];
   
     $query = $api_options['api_scheme'] . "://" . $api_options['api_host'];                                           //| http://v1.api.social_hashtag.com
@@ -566,14 +390,6 @@ class SOCIAL_HASHTAG_CACHE {
     }
   }  
   
-  function run_manually_hook() {
-    if( isset($_REQUEST['run_social_hashtag_manually']) ) {
-      if( $_REQUEST['debug'] ){ $this->debug = true; }
-      $this->get_social_hashtag_pics($_REQUEST['num']);
-      die();
-    }
-  }
-  
   function add_cron_intervals( $schedules ) {
   	$schedules['five_minutes'] = array(
   		'interval' => 300,
@@ -596,7 +412,7 @@ class SOCIAL_HASHTAG_CACHE {
       $this->run_social_hashtag_query($num);
     }
     else{
-      $social_api_options = $this->get_plugin_options();
+      $social_api_options = $this->get_social_hashtag_options();
       foreach( $social_api_options as $cache_num => $option_settings ){
         $this->run_social_hashtag_query($cache_num);
       }
@@ -623,161 +439,7 @@ class SOCIAL_HASHTAG_CACHE {
     curl_close($ch);
     return $output;
   }
-
-  function create_posttype_and_taxonomy() {
-    register_post_type( 'social_hashtag',
-      array(
-        'labels' => array(
-        'name' => __( 'Social Hashtags' ),
-        'singular_name' => __( 'Social Hashtag' ),
-        'add_new' => __( 'Add New Social Hashtag' ),
-        'add_new_item' => __( 'Add New Social Hashtag' ),
-        'edit_item' => __( 'Edit Social Hashtag' ),
-        'new_item' => __( 'Add New Social Hashtag' ),
-        'view_item' => __( 'View Social Hashtag' ),
-        'search_items' => __( 'Search Social Hashtags' ),
-        'not_found' => __( 'No social Hashtags found' ),
-        'not_found_in_trash' => __( 'No social hashtag found in trash' )
-      ),
-      'public' => true,
-      'supports' => array( 'title', 'thumbnail', 'editor', 'custom-fields'),
-      'capability_type' => 'post',
-      'has_archive' => 'social',
-      'hierarchical' => false,
-      'taxonomies' => array('social_hashtag_categories'),
-      'rewrite' => array("slug" => "social"), // Permalinks format
-      'menu_position' => '5'
-      )
-    );
-    register_taxonomy(
-    	'social_hashtag_categories',
-    	'social_hashtag',
-    	array(
-    	'labels' => array(
-    		'name' => 'Social Hashtag Categories',
-    		'singular_name' => 'Social Hashtag Categories',
-    		'search_items' => 'Search Social Hashtag Categories',
-    		'popular_items' => 'Popular Social Hashtag Categories',
-    		'all_items' => 'All Social Hashtag Categories',
-    		'parent_item' => 'Parent Social Hashtag Categories',
-    		'parent_item_colon' => 'Parent Social Hashtag Categories:',
-    		'edit_item' => 'Edit Social Hashtag Category',
-    		'update_item' => 'Update Social Hashtag Category',
-    		'add_new_item' => 'Add New Social Hashtag Category',
-    		'new_item_name' => 'New Social Hashtag Category Name'
-    	),
-    		'hierarchical' => true,
-    		'label' => 'Social Hashtag Category',
-    		'show_ui' => true,
-    		'rewrite' => array( 'slug' => 'social-categories' ),
-    	)
-    );
-    register_taxonomy(
-    	'social_hashtag_tags',
-    	'social_hashtag',
-    	array(
-    	'labels' => array(
-    		'name' => 'Social Hashtag Tags',
-    		'singular_name' => 'Social Hashtag Tags',
-    		'search_items' => 'Search Social Hashtag Tags',
-    		'popular_items' => 'Popular Social Hashtag Tags',
-    		'all_items' => 'All Social Hashtag Tags',
-    		'parent_item' => 'Parent Social Hashtag Tags',
-    		'parent_item_colon' => 'Parent Social Hashtag Tags:',
-    		'edit_item' => 'Edit Social Hashtag Tag',
-    		'update_item' => 'Update Social Hashtag Tag',
-    		'add_new_item' => 'Add New Social Hashtag Tag',
-    		'new_item_name' => 'New Social Hashtag Tag Name'
-    	),
-    		'hierarchical' => false,
-    		'label' => 'Social Hashtag Tag',
-    		'show_ui' => true,
-    		'update_count_callback' => '_update_post_term_count',
-    		'rewrite' => array( 'slug' => 'social-tags' ),
-    	)
-    );
-    add_filter('archive_template', 'social_hashtag_custom_archive_template');
-    function social_hashtag_custom_archive_template($template) {
-        global $wp_query;
-        if (is_post_type_archive('social_hashtag')) {
-            $template = SOCIAL_HASHTAG_DIR . 'lib/archive-social_hashtag.php';
-            //$template = social_hashtag_locate_plugin_template($templates);
-        }
-        return $template;
-    }
+  
+    
   }
-  
-  function display_social_hashtag_pics( $defaults ) {
-    
-    // cool masonry / fancybox display
-    //http://www.queness.com/post/8881/create-a-twitter-feed-with-attached-images-from-media-entities
-    
-    $paged = ( get_query_var( 'paged' ) ) ? get_query_var('paged') : 1;
-    $args = array(
-      'post_type' => 'social_hashtag',
-      //'cat' => $cat,
-      //'offset' => $offset,
-      'posts_per_page' => ($defaults['rows'] * $defaults['cols']),
-      'orderby' => 'date',
-      'order' => 'DESC',
-      'paged' => $paged
-    );
-
-    $get_posts = new WP_Query($args);
-    
-    if( count($get_posts->posts) ){
-    print "<div style='margin:20px;display:block;min-height:20px'>";
-?>
-    		<div class="next"><?php next_posts_link('Older Entries &raquo;', $get_posts->max_num_pages) ?></div>
-    		<div class="prev"><?php previous_posts_link('&laquo; Newer Entries', $get_posts->max_num_pages) ?></div>
-<?php 
-    print "</div>\n";
-    print "\n<div style='width:900px'>";
-    print "\n<ul class='social_hashtag_pics'>\n";
-    foreach($get_posts->posts as $num => $post){
-      $social_hashtag_userhandle = get_post_meta($post->ID, 'social_hashtag_userhandle', true);
-      $social_hashtag_thumb_url = get_post_meta($post->ID, 'social_hashtag_thumb_url', true);
-      $social_hashtag_full_url = get_post_meta($post->ID, 'social_hashtag_full_url', true);
-      $social_hashtag_platform = get_post_meta($post->ID, 'social_hashtag_platform', true);
-      $social_hashtag_thumb_imagesize = get_post_meta($post->ID, 'social_hashtag_thumb_imagesize', true);
-      print "\n\t<li class='{$social_hashtag_platform} {$social_hashtag_thumb_imagesize}'><a href='{$social_hashtag_full_url}' target=_blank><img src='{$social_hashtag_thumb_url}' title='{$post->post_title}' alt='{$post->post_title}' /></a></li>";
-      //if( ($num+1) % $defaults['cols'] == 0 ){ print "<br class='clear'>";}      
-    }
-    print "</ul></div>\n";
-    }
- 
-  }
-  
-  
- function display_social_hashtag_map( $defaults ) {
-   
-?>   
-<script type="text/javascript">
-jQuery(document).ready(function() {
-  jQuery('#map_canvas').gmap().bind('init', function(evt, map) {
-  	jQuery('#map_canvas').gmap('getCurrentPosition', function(position, status) {
-  		if ( status === 'OK' ) {
-  			var clientPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-  			jQuery('#map_canvas').gmap('addMarker', {'position': clientPosition, 'bounds': true});
-  			jQuery('#map_canvas').gmap('addShape', 'Circle', { 
-  				'strokeWeight': 0, 
-  				'fillColor': "#008595", 
-  				'fillOpacity': 0.25, 
-  				'center': clientPosition, 
-  				'radius': 5, 
-  				'clickable': false 
-  			});
-  		}
-  	});   
-  });
-});
-</script>
-<div id="map_canvas"></div>
-
-<?php   
-   
- }
- 
-  
-    
 }

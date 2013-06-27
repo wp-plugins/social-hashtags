@@ -1,5 +1,7 @@
 <?php
-
+/*
+ * @author      Bryan Shanaver <bryan[at]fiftyandfifty[dot]org>
+ */
 
 class PLATFORM_BASE {
   
@@ -47,10 +49,10 @@ class PLATFORM_BASE {
   
   function get_cron_intervals(){
     return array(
-      'manual' => 'manual',
-      'hourly' => 'hourly',
-      'twicedaily' => 'twicedaily',
-      'daily' => 'daily'      
+      'manual'            => 'manual',
+      'every hour'        => 'cron60',
+      'every 30 minutes'  => 'cron30',
+      'every 15 minutes'  => 'cron15'
     );
   }
 
@@ -70,7 +72,6 @@ class PLATFORM_TWITTER Extends PLATFORM_BASE {
     }
     
     if( $plugin_options['only_with_pics'] == 'Yes' && $no_pic ){
-      if($this->debug){print "Skip no pic \n";}
       return false;
     }
     
@@ -232,7 +233,7 @@ class PLATFORM_TWITTER Extends PLATFORM_BASE {
           <tfoot>
             <tr>
               <th class="manage-column" scope="col">
-            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <input type=checkbox value=true class=debug> <small>debug to javascript console</small> <div id="run_manually_response"></div></p>            
+            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <!-- input type=checkbox value=true class=debug> <small>debug to javascript console</small --> <div id="run_manually_response"></div></p>            
               </th>
               <th class="manage-column" scope="col"> <div class="remove-div"><a href="javascript:delete_an_api(<?php print $cache_num ?>);" class="widget-control-remove">Remove</a></div>  </th>
             </tr>
@@ -357,7 +358,7 @@ class PLATFORM_TELEPORTD Extends PLATFORM_BASE {
           <tfoot>
             <tr>
               <th class="manage-column" scope="col">
-            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <input type=checkbox value=true class=debug> <small>debug to javascript console</small> <div id="run_manually_response"></div></p>            
+            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <!--input type=checkbox value=true class=debug> <small>debug to javascript console</small --> <div id="run_manually_response"></div></p>            
               </th>
               <th class="manage-column" scope="col"> <div class="remove-div"><a href="javascript:delete_an_api(<?php print $cache_num ?>);" class="widget-control-remove">Remove</a></div>  </th>
             </tr>
@@ -390,7 +391,7 @@ class PLATFORM_INSTAGRAM Extends PLATFORM_BASE {
     $this->pic_handle_platform  = 'instagram';    
     $this->pic_username         = $response_object->user->full_name;
     $this->pic_platform         = 'instagram';
-    $this->pic_full_title       = $response_object->caption->text;
+    $this->pic_full_title       = urlencode($response_object->caption->text);
     $this->pic_clean_title      = trim($clean_title) != '' ? $clean_title : $this->pic_handle . ' using ' . $this->pic_handle_platform;
     return true;
   }
@@ -424,7 +425,7 @@ class PLATFORM_INSTAGRAM Extends PLATFORM_BASE {
             	</td>
           	  <th scope="row">
                 <label for="">Authorization</label><br/>
-                <code>Instagram requires that you <a target="_blank" href="http://instagram.com/developer/clients/manage/">register a 'client' application</a><br/>(it's free and takes 2 minutes)</code>
+                <code>Instagram requires that you <a target="_blank" href="http://instagram.com/developer/clients/manage/">register a 'client' application</a><br/>(it's free & takes about 5 minutes to set up)</code>
             	</th>
             </tr>
             <tr class="active">
@@ -463,7 +464,7 @@ class PLATFORM_INSTAGRAM Extends PLATFORM_BASE {
           <tfoot>
             <tr>
               <th class="manage-column" scope="col">
-            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <input type=checkbox value=true class=debug> <small>debug to javascript console</small> <div id="run_manually_response"></div></p>            
+            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <!--input type=checkbox value=true class=debug> <small>debug to javascript console</small --> <div id="run_manually_response"></div></p>            
               </th>
               <th class="manage-column" scope="col"> <div class="remove-div"><a href="javascript:delete_an_api(<?php print $cache_num ?>);" class="widget-control-remove">Remove</a></div>  </th>
             </tr>
@@ -496,7 +497,8 @@ class PLATFORM_YOUTUBE Extends PLATFORM_BASE {
     $this->pic_platform         = 'youtube';
     $this->pic_full_title       = $response_object->title;
     $this->pic_clean_title      = $response_object->title;
-    $this->pic_post_content     = $response_object->description;
+    $this->pic_post_content     = "<iframe id='ytplayer' type='text/html' width='640' height='360' src='https://www.youtube.com/embed/{$response_object->id}' frameborder='0' allowfullscreen></iframe>" . " <details>{$response_object->description}</details>";
+
     $this->vid_embed            = $response_object->player->default;
     return true;
   }
@@ -579,7 +581,7 @@ class PLATFORM_YOUTUBE Extends PLATFORM_BASE {
           <tfoot>
             <tr>
               <th class="manage-column" scope="col">
-            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <input type=checkbox value=true class=debug> <small>debug to javascript console</small> <div id="run_manually_response"></div></p>            
+            		<p><a class="button-secondary" id="run_manually" href="javascript:run_manually(<?php print $cache_num ?>);">Run This Query Manually</a> <!--input type=checkbox value=true class=debug> <small>debug to javascript console</small --> <div id="run_manually_response"></div></p>            
               </th>
               <th class="manage-column" scope="col"> <div class="remove-div"><a href="javascript:delete_an_api(<?php print $cache_num ?>);" class="widget-control-remove">Remove</a></div>  </th>
             </tr>
