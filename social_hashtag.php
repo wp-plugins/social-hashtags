@@ -2,14 +2,14 @@
 /*
 Plugin Name: Social Hashtag
 Description: Grabs images & videos matching any hashtag from social APIs like instagram & youtube.  Stores thumbnails & details locally for each one in a custom post type so you have full control over the content on your site.  This allows you to categorize, make private/public, etc and include them any way that you like on your pages.
-Version: 2.0.1
+Version: 2.0.2
 Author: Bryan Shanaver
 Author URI: http://fiftyandfifty.org
 */
 ?>
 <?php
 
-define('SOCIAL_HASHTAG_VERSION', '2.0.1');
+define('SOCIAL_HASHTAG_VERSION', '2.0.2');
 
 define('SOCIAL_HASHTAG_URL', plugin_dir_url( __FILE__ ));
 define('SOCIAL_HASHTAG_PATH', plugin_dir_path(__FILE__) );
@@ -162,6 +162,25 @@ function social_hashtag_activate() {
 register_deactivation_hook(__FILE__,'social_hashtag_deactivate');
 function social_hashtag_deactivate(){
   social_hashtag_deactivate_cron();
+}
+
+/**
+ * Fixes the attachment url (so it doesn't look in the local uploads directory)
+ *
+ * @package WordPress
+ */
+
+add_filter('wp_get_attachment_url', 'social_hashtag_get_attachment_url', 9, 2);
+function social_hashtag_get_attachment_url($url, $postID)
+{
+  $social_hashtag_url = get_post_meta($postID, 'social_hashtag_thumb_url', true);
+
+  if( !empty($social_hashtag_url) ){
+    return $social_hashtag_url;
+  }
+  else{
+    return $url;
+  }
 }
 
 

@@ -50,6 +50,9 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 = 2.0.1 =
 * Add link to the archive page
 
+= 2.0.2 =
+* Use remote thumnail as media attachment image
+
 == Upgrade Notice ==
 
 = 1.0.0 =
