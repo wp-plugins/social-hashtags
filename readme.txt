@@ -9,7 +9,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Grabs images & videos matching any hashtag from social APIs like instagram & youtube.
 
-== Description ==  
+== Description ==
 
 Grabs images & videos matching any hashtag from social APIs like instagram & youtube.  Stores thumbnails & details locally for each one in a custom post type so you have full control over the content on your site.  This allows you to categorize, make private/public, etc and include them any wayt hat you like on your pages.
 
@@ -46,6 +46,9 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 * Fix cron functionality
 * Add logging through WLS plugin
 * Lots of cleanup & restructuring
+
+= 2.0.1 =
+* Add link to the archive page
 
 == Upgrade Notice ==
 

@@ -2,14 +2,14 @@
 /*
 Plugin Name: Social Hashtag
 Description: Grabs images & videos matching any hashtag from social APIs like instagram & youtube.  Stores thumbnails & details locally for each one in a custom post type so you have full control over the content on your site.  This allows you to categorize, make private/public, etc and include them any way that you like on your pages.
-Version: 2.0.0
+Version: 2.0.1
 Author: Bryan Shanaver
 Author URI: http://fiftyandfifty.org
 */
 ?>
 <?php
 
-define('SOCIAL_HASHTAG_VERSION', '2.0.0');
+define('SOCIAL_HASHTAG_VERSION', '2.0.1');
 
 define('SOCIAL_HASHTAG_URL', plugin_dir_url( __FILE__ ));
 define('SOCIAL_HASHTAG_PATH', plugin_dir_path(__FILE__) );
@@ -53,26 +53,26 @@ function social_hashtag_add_menu_page(){
       print "missing options page!";
     }
   };
-  add_submenu_page( 'options-general.php', 'Social Hashtag Settings', 'Social Hashtag', 'switch_themes', 'social_hashtag', 'social_hashtag_menu_page' ); 
+  add_submenu_page( 'options-general.php', 'Social Hashtag Settings', 'Social Hashtag', 'switch_themes', 'social_hashtag', 'social_hashtag_menu_page' );
 };
 add_action( 'admin_menu', 'social_hashtag_add_menu_page' );
 
 // Add settings link on plugin page
-function social_hashtag_plugin_settings_link($links) { 
-  $settings_link = '<a href="options-general.php?page=social_hashtag">Settings</a>'; 
-  array_unshift($links, $settings_link); 
-  return $links; 
+function social_hashtag_plugin_settings_link($links) {
+  $settings_link = '<a href="options-general.php?page=social_hashtag">Settings</a>';
+  array_unshift($links, $settings_link);
+  return $links;
 }
 add_filter("plugin_action_links_" . SOCIAL_HASHTAG_BASENAME, 'social_hashtag_plugin_settings_link' );
 
 
-/* 
+/*
 
 Cron functions
 
 */
 
-// set up custom cron schedules 
+// set up custom cron schedules
 add_filter( 'cron_schedules', 'social_hashtag_cron_schedules');
 function social_hashtag_cron_schedules(){
   return array(
@@ -116,7 +116,7 @@ function social_hashtag_activate_cron($cron) {
 // function for removing the cron
 function social_hashtag_deactivate_cron() {
   if( wp_get_schedule('social_hashtag_cron') ){
-    wp_clear_scheduled_hook('social_hashtag_cron');    
+    wp_clear_scheduled_hook('social_hashtag_cron');
   }
 }
 
@@ -165,7 +165,7 @@ function social_hashtag_deactivate(){
 }
 
 
-/* 
+/*
 
 Ajax Methods
 

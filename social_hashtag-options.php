@@ -15,13 +15,13 @@
     // print "<pre>";
     // print_r($_POST);
     // print "</pre>";
-       
+
     if (!empty($_REQUEST['_wpnonce']) && wp_verify_nonce($_REQUEST['_wpnonce'], "update-options") && !empty($_REQUEST['social_hashtag_global'])) {
       $social_hashtag_cache->save_option( $social_hashtag_cache->social_api_options, $_REQUEST['social_hashtag_cache'] );
       $social_hashtag_cache->save_option( $social_hashtag_cache->global_options, $_REQUEST['social_hashtag_global'] );
     }
     $social_api_options = $social_hashtag_cache->get_social_hashtag_options();
-    
+
     if( !empty($_REQUEST['delete_api']) ){
       foreach( $social_api_options as $cache_num => $option_settings ){
         if( $_REQUEST['delete_api'] != $cache_num ){
@@ -31,9 +31,9 @@
       $social_hashtag_cache->save_option( $social_hashtag_cache->social_api_options, $rebuild_api_options );
       $social_api_options = $rebuild_api_options;
     }
-    
+
     if( !empty($_REQUEST['add_api']) ){
-      $social_api_options[] = array_merge( $social_hashtag_cache->social_api_settings, array('api_selected' => $_REQUEST['api_option'],'search_name' => $_REQUEST['api_option']) );      
+      $social_api_options[] = array_merge( $social_hashtag_cache->social_api_settings, array('api_selected' => $_REQUEST['api_option'],'search_name' => $_REQUEST['api_option']) );
     }
 
     return $social_api_options;
@@ -47,7 +47,7 @@
   $always_private     = !empty($global_options['always_private'])?$global_options['always_private']:'No';
   $max_items          = !empty($global_options['max_items'])?$global_options['max_items']:'50';
   $blacklisted_users  = !empty($global_options['blacklisted_users'])?$global_options['blacklisted_users']:'';
-      
+
 ?>
 
   <style>
@@ -75,7 +75,7 @@
           else{ sh_handle_response(xdr.responseText, request_type, true); }
         };
         xdr.send(jQuery.param(data));
-      } 
+      }
       else {
         result = jQuery.ajax({
           'type'       : 'post',
@@ -118,7 +118,7 @@
 
     jQuery("#social_hashtag_form").children(".widgets-holder-wrap").children(".sidebar-name").click(function() {
         jQuery(this).parent().toggleClass("closed")
-    });    
+    });
     function add_an_api(){
       jQuery('#social_hashtag_form #add_api').val('true');
       jQuery('#social_hashtag_form').submit()
@@ -156,22 +156,23 @@
       jQuery('.disable_onchange').change(function() {
         jQuery('#test_api').attr("href", "javascript:alert('save changes first')");
         jQuery('#run_manually').attr("href", "javascript:alert('save changes first')");
-      });  
+      });
     });
   </script>
-  
+
 <div class="wrap">
 <div id="icon-options-general" class="icon32"><br /></div>
 <h2>Social Hashtags</h2>
 <form action="options-general.php?page=social_hashtag" method="post" id="social_hashtag_form">
   <?php wp_nonce_field('update-options'); ?>
   <input type="hidden" name="delete_api" id="delete_api" />
-    
-<?php if( isset($social_api_options[0]) ): ?>    
-  
-  <h3>Global Settings</h3>
 
-  <table id="all-plugins-table" class="widefat">   
+<?php if( isset($social_api_options[0]) ): ?>
+
+  <h3>Global Settings</h3>
+  <p>Here is your <a href="<?php print bloginfo('url') ?>/social" target="_blank">local archive page listing</a></p>
+
+  <table id="all-plugins-table" class="widefat">
     <thead>
       <tr>
         <th class="manage-column" scope="col">All APIs Inherit These Settings</th>
@@ -184,19 +185,19 @@
       	  <select name="social_hashtag_global[debug_on]" class="disable_onchange" >
       	    <option value="0" <?php selected( $debug_on, '0' ); ?>>No</option>
       	    <option value="1" <?php selected( $debug_on, '1' ); ?>>Yes</option>
-      		</select> 
+      		</select>
         </td>
     	  <th scope="row">
       		<label for="">Turn debug ON</label><br/>
       		<code>Debugging info will be sent to the log<br/>(requires installing the <a href="http://wordpress.org/plugins/wordpress-logging-service/">WLS plugin</a>)</code>
       	</th>
-      </tr>      
+      </tr>
       <tr class="active">
         <td class="desc">
       	  <select name="social_hashtag_global[always_private]" class="disable_onchange" >
       	    <option value="No" <?php selected( $always_private, 'No' ); ?>>No</option>
       	    <option value="Yes" <?php selected( $always_private, 'Yes' ); ?>>Yes</option>
-      		</select> 
+      		</select>
         </td>
     	  <th scope="row">
       		<label for="">Set new items as private by default</label><br/>
@@ -211,7 +212,7 @@
       		<label for="">Max number of items to get per API</label><br/>
       		<code>Set to 0 for no max - this may take a long time to run since some services only let you grab 50 at a time.</code>
       	</th>
-      </tr>  
+      </tr>
       <tr class="active">
         <td class="desc">
           <p><textarea name="social_hashtag_global[blacklisted_users]" cols="80" rows="4"><?php print $blacklisted_users ?></textarea></p>
@@ -222,26 +223,26 @@
       	</th>
       </tr>
     </tbody>
-	</table>   
-	
-<?php endif; ?>  
-	
-	<div style="width:100%;height:20px"></div> 
-	
+	</table>
+
+<?php endif; ?>
+
+	<div style="width:100%;height:20px"></div>
+
   <select name="api_option" style="width:100px">
 <?php foreach( $social_hashtag_cache->api_options as $option => $option_settings ): ?>
     <option value="<?php print $option ?>"><?php print $option ?></option>
 <?php endforeach; ?>
-  </select> 
+  </select>
 
   <input type="hidden" name="add_api" id="add_api" />
   <a href="javascript:add_an_api();" class="button-secondary">Add an API Source</a>
-  
+
   <div style="width:100%;height:20px"></div>
-  
+
   <h3>API Settings</h3>
-  
-<?php 
+
+<?php
 
   if( !empty($social_api_options[0]) ){
     $shortest_cron_interval = null;
