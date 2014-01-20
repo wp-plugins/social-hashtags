@@ -2,7 +2,7 @@
 Contributors: shanaver
 Tags: instagram, youtube, hashtags, videos, photos, images, API, twitter, teleportd
 Requires at least: 3.0.1
-Tested up to: 3.5.1
+Tested up to: 3.8
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -52,6 +52,9 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 
 = 2.0.2 =
 * Use remote thumnail as media attachment image
+
+= 2.3.0 =
+* Allow for Custom Post Type name/slug to be custom defined
 
 == Upgrade Notice ==
 

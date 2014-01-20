@@ -2,6 +2,15 @@
 
 add_action( 'init', 'create_social_hashtag_posttype' );
 function create_social_hashtag_posttype() {
+
+  if( empty($social_hashtag_cache) ){
+    $social_hashtag_cache = new SOCIAL_HASHTAG_CACHE();
+  }
+
+  $global_options = $social_hashtag_cache->get_social_hashtag_options(null, 'global');
+
+  $slug = (!empty($global_options['slug'])?$global_options['slug']:$social_hashtag_cache->cpt_slug);
+
   register_post_type( 'social_hashtag',
     array(
       'labels' => array(
@@ -19,10 +28,10 @@ function create_social_hashtag_posttype() {
     'public' => true,
     'supports' => array( 'title', 'thumbnail', 'editor', 'custom-fields'),
     'capability_type' => 'post',
-    'has_archive' => 'social',
+    'has_archive' => $slug,
     'hierarchical' => false,
     'taxonomies' => array('social_hashtag_categories', 'social_hashtag_tags'),
-    'rewrite' => array("slug" => "social"), // Permalinks format
+    'rewrite' => array('slug' => $slug),
     'menu_position' => '5'
     )
   );
@@ -45,7 +54,7 @@ function create_social_hashtag_posttype() {
   		'hierarchical' => true,
   		'label' => 'Social Hashtag Category',
   		'show_ui' => true,
-  		'rewrite' => array( 'slug' => 'social-categories' ),
+  		'rewrite' => array( 'slug' => $slug . '-categories' ),
   	)
   );
   register_taxonomy(
@@ -68,7 +77,7 @@ function create_social_hashtag_posttype() {
   		'label' => 'Social Hashtag Tag',
   		'show_ui' => true,
   		'update_count_callback' => '_update_post_term_count',
-  		'rewrite' => array( 'slug' => 'social-tags' ),
+  		'rewrite' => array( 'slug' => $slug . '-tags' ),
   	)
   );
 }

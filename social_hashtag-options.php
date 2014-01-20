@@ -43,6 +43,7 @@
   $social_api_options = social_hashtag_getset_options($social_hashtag_cache);
 
   $global_options     = $social_hashtag_cache->get_social_hashtag_options(null, 'global');
+  $slug               = !empty($global_options['slug'])?$global_options['slug']:$social_hashtag_cache->cpt_slug;
   $debug_on           = !empty($global_options['debug_on'])?$global_options['debug_on']:'0';
   $always_private     = !empty($global_options['always_private'])?$global_options['always_private']:'No';
   $max_items          = !empty($global_options['max_items'])?$global_options['max_items']:'50';
@@ -170,7 +171,7 @@
 <?php if( isset($social_api_options[0]) ): ?>
 
   <h3>Global Settings</h3>
-  <p>Here is your <a href="<?php print bloginfo('url') ?>/social" target="_blank">local archive page listing</a></p>
+  <p>Here is your <a href="<?php print bloginfo('url') ?>/<?php print $global_options['slug'] ?>" target="_blank">local archive page listing</a></p>
 
   <table id="all-plugins-table" class="widefat">
     <thead>
@@ -180,6 +181,15 @@
       </tr>
     </thead>
     <tbody class="plugins">
+      <tr class="active">
+        <td class="desc">
+          <p><input type="text" name="social_hashtag_global[slug]" value="<?php print $slug ?>" class="regular-text" /></p>
+        </td>
+        <th scope="row">
+          <label for="">Permalink Slug</label><br/>
+          <code>Default is 'social'<br>(Be sure to <a href="/wp-admin/options-permalink.php?settings-updated=true">reset your rewrites after changing this)</code>
+        </th>
+
       <tr class="active">
         <td class="desc">
       	  <select name="social_hashtag_global[debug_on]" class="disable_onchange" >

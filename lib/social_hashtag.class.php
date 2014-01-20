@@ -54,7 +54,9 @@ class SOCIAL_HASHTAG_CACHE {
 
   var $teleportd, $instagram, $twitter, $youtube;
 
-  var $debug = false;
+  var $debug              = false;
+
+  var $cpt_slug           = 'social';
 
   var $global_options     = 'social_hashtag-global';
   var $social_api_options = 'social_hashtag-apis';
