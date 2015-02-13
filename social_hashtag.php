@@ -2,14 +2,14 @@
 /*
 Plugin Name: Social Hashtag
 Description: Grabs images & videos matching any hashtag from social APIs like instagram & youtube.  Stores thumbnails & details locally for each one in a custom post type so you have full control over the content on your site.  This allows you to categorize, make private/public, etc and include them any way that you like on your pages.
-Version: 2.3.0
+Version: 3.0.0
 Author: Bryan Shanaver
 Author URI: http://fiftyandfifty.org
 */
 ?>
 <?php
 
-define('SOCIAL_HASHTAG_VERSION', '2.3.0');
+define('SOCIAL_HASHTAG_VERSION', '3.0.0');
 
 define('SOCIAL_HASHTAG_URL', plugin_dir_url( __FILE__ ));
 define('SOCIAL_HASHTAG_PATH', plugin_dir_path(__FILE__) );

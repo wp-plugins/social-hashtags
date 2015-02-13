@@ -1,13 +1,17 @@
-=== Social Hashtags ===
-Contributors: shanaver
+====== Social Hashtags ======
+Contributors: shanaver, mandiberg, thomasrstorey, hachacha, janiceaa
 Tags: instagram, youtube, hashtags, videos, photos, images, API, twitter, teleportd
 Requires at least: 3.0.1
-Tested up to: 3.8
+Tested up to: 4.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Grabs images & videos matching any hashtag from social APIs like instagram & youtube.
+
+== Update Plans ==
+
+We are going to upgrade twitter to oAuth, and clean up the layout.
 
 == Description ==
 
@@ -55,6 +59,18 @@ It takes about 1 minute to start pulling in videos from youtube.  It takes about
 
 = 2.3.0 =
 * Allow for Custom Post Type name/slug to be custom defined
+
+= 3.0.0
+* Added option to keep or remove hashtagged words in retrieved posts.
+* Added functionality to store more metadata from posts retrieved from Twitter and Instagram, including:
+  * URL to post on Twitter/Instagram
+  * URL to user on Twitter/Instagram
+  * Timestamp for post from Twitter/Instagram
+* Exposed metadata from retrieved posts to be displayed in the archive page.
+* Added option to keep or remove Emoji from retrieved posts.
+* Added option to whitelist usernames.
+* Added option to pick a wordpress user to use as the author for social-hashtag posts.
+* Verified for Wordpress 4.1
 
 == Upgrade Notice ==
 
